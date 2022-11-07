@@ -6,7 +6,7 @@ from fastapi import APIRouter, Request
 router = APIRouter()
 
 
-@router.get("/new")
+@router.post("/new")
 async def experiment(request: Request):
     new_id = uuid4()
     request.app.state.experiment = new_id
