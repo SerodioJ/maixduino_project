@@ -1,0 +1,22 @@
+FROM ubuntu:20.04
+
+RUN apt-get update -y && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        python3 \
+        python3-pip \
+        ffmpeg \
+        libsm6 \ 
+        libxext6 && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY requirements.txt requirements.txt
+
+RUN pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+
+COPY app/ /app
+
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host=0.0.0.0"]

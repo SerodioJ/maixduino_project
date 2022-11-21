@@ -1,0 +1,9 @@
+.env
+*.pt
+*.json
+*.jpg
+json/
+images/
+!json/.gitkeep
+!images/.gitkeep
+__pycache__/

@@ -1,0 +1,31 @@
+FROM ubuntu:20.04
+
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        gnupg2 \
+        curl &&\
+    echo "deb [signed-by=/usr/share/keyrings/coral-edgetpu-archive-keyring.gpg] https://packages.cloud.google.com/apt coral-edgetpu-stable main" | tee /etc/apt/sources.list.d/coral-edgetpu.list &&\
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | tee /usr/share/keyrings/coral-edgetpu-archive-keyring.gpg >/dev/null && \
+    apt-get update -y && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        python3 \
+        python3-pip \
+        python3-tflite-runtime \
+        python3-opencv \
+        libatlas-base-dev \
+        libjpeg8-dev \
+        zlib1g-dev \
+        && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY requirements-arm.txt requirements.txt
+
+RUN pip install -r requirements.txt
+
+COPY app/ /app
+
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host 0.0.0.0"]
