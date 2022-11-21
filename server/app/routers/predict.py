@@ -2,6 +2,7 @@ import io
 import json
 import base64
 from fastapi import APIRouter, Request
+from fastapi.responses import JSONResponse
 from PIL import Image
 from time import perf_counter
 
@@ -20,16 +21,30 @@ async def predict(request: Request, body: PredictBody, op: Operations):
     base64.decode(io.BytesIO(body.image), image_bytes)
     image = Image.open(image_bytes)
     exp_id = request.app.state.experiment
+    if exp_id == None:
+        return JSONResponse(
+                status_code=404,
+                content={
+                    "message": "no experiment found, it needs to be initialized"
+                },
+            )
     sample = update_sample(request)
     image_file(exp_id, sample, image)
-    result = request.app.state.model[op].predict(image)
+    results = request.app.state.model[op].predict(image)
+    if op == Operations.detect:
+        response = {}
+        for elem in results:
+            response[elem["name"]] = response.get(elem["name"], 0) + 1
+    response = response if response else results
     save_result = {
         "net": settings.model_dict[op],
+        "net_result": results,
         "time_device": body.time,
         "time_server": perf_counter() - start,
-        "result": result,
+        "response": response,
         "req_len": int(request.headers["content-length"]),
-        "res_len": len(json.dumps(result)),
+        "res_len": len(json.dumps(response)),
+        "tag": body.tag
     }
     json_file(exp_id, sample, json.dumps(save_result))
-    return result
+    return response

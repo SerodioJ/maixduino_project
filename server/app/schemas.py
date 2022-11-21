@@ -5,8 +5,13 @@ from pydantic import BaseModel
 
 
 class Operations(str, Enum):
-    classi = "classification"
+    # classi = "classification"
     detect = "detection"
+
+class Edge(str, Enum):
+    cloud = "cloud"
+    edge = "edge"
+    edge_arm = "edge_arm"
 
 
 class ClassificationModel(str, Enum):
@@ -26,16 +31,16 @@ class DetectionModel(str, Enum):
 
 
 class ResultBody(BaseModel):
-    result: dict
+    result: list
     time: float
     net: str
-    battery: Optional[float]
+    tag: Optional[str]
 
 
 class PredictBody(BaseModel):
     image: bytes
-    time: float
-    battery: Optional[float]
+    time: Optional[float]
+    tag: Optional[str]
 
 
 class PredictResponse(BaseModel):

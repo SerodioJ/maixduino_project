@@ -10,7 +10,7 @@ class ImageClassification:
         self.model = settings.class_model_app[model]()
         self.model_lib = importlib.import_module(settings.class_model_lib[model])
 
-    def predict(self, img, top: int = 5):
+    def predict(self, img, top: int = 1):
         model_input = np.asarray(img)
         model_input = np.expand_dims(model_input, axis=0)
         model_input = self.model_lib.preprocess_input(model_input)
