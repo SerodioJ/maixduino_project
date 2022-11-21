@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yolov5-deployment-cloud
+  labels:
+    app: yolov5
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: yolov5
+  template:
+    metadata:
+      labels:
+        app: yolov5
+    spec:
+      nodeSelector:
+        placement: cloud
+      containers:
+      - name: yolov5
+        image: serodioj/iot-project:1.0
+        ports:
+        - containerPort: 8000
+          hostPort: 8000
+        env:
+        - name: detect_model
+          value: "yolov5s"
+        - name: placement
+          value: "cloud"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: yolov5-svc-cloud
+spec:
+  type: LoadBalancer
+  selector:
+    app: yolov5
+  ports:
+    - name: http-0
+      port: 80
+      targetPort: 8000

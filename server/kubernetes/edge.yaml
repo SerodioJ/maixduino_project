@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yolov5-deployment-edge
+  labels:
+    app: yolov5
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: yolov5
+  template:
+    metadata:
+      labels:
+        app: yolov5
+    spec:
+      nodeSelector:
+        placement: edge
+        type: rasp4
+      containers:
+      - name: yolov5
+        image: serodioj/iot-project:1.0
+        ports:
+        - containerPort: 8000
+          hostPort: 8000
+        env:
+        - name: detect_model
+          value: "yolov5s"
+        - name: placement
+          value: "edge_arm"
+
+# No Service is used, use host IP in LAN.
