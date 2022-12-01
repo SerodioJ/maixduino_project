@@ -17,21 +17,10 @@ class Response:
         self.encoding = "utf-8"
         self._cached = None
 
-    def close(self):
-        if self.raw:
-            self.raw.close()
-            self.raw = None
-        self._cached = None
 
     @property
     def content(self):
-        if self._cached is None:
-            try:
-                self._cached = self.raw.read()
-            finally:
-                self.raw.close()
-                self.raw = None
-        return self._cached
+        return self.raw
 
     @property
     def text(self):
@@ -51,7 +40,7 @@ def request(
         assert data is None
         import ujson
 
-        data = ujson.dumps(json)
+        data = ujson.dumps(json).encode("ascii")
 
     while True:
         try:
@@ -80,8 +69,8 @@ def request(
         s = socket.socket(ai[0], ai[1], ai[2])
         try:
             s.connect(ai[-1])
-            if proto == "https:":
-                s = ssl.wrap_socket(s, server_hostname=host)
+            # if proto == "https:":
+            #     s = ssl.wrap_socket(s, server_hostname=host)
             s.write(b"%s /%s HTTP/1.0\r\n" % (method, path))
             if not "Host" in headers:
                 s.write(b"Host: %s\r\n" % host)
@@ -131,6 +120,7 @@ def request(
                     resp_d[k] = v.strip()
                 else:
                     parse_headers(l, resp_d)
+            raw = l = s.read()
         except OSError:
             s.close()
             raise
@@ -138,7 +128,7 @@ def request(
         if status != 300:
             break
 
-    resp = Response(s)
+    resp = Response(raw)
     s.close()
     resp.status_code = status
     resp.reason = reason
@@ -146,6 +136,11 @@ def request(
         resp.headers = resp_d
     return resp
 
+def get_content(s, len):
+    content = ""
+    while len(content) != len:
+        content = content + s.readline()
+    return content
 
 def head(url, **kw):
     return request("HEAD", url, **kw)
