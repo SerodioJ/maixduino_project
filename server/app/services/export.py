@@ -13,7 +13,6 @@ def export_experiment(exp_id):
     if not (os.path.exists(f"json/{exp_id}/")):
         return None
     files = glob.glob(f"json/{exp_id}/*.json")
-    print(files)
     export = []
     for file in files:
         export.append(get_json_content(file))

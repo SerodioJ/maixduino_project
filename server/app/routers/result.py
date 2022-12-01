@@ -1,4 +1,5 @@
 import json
+from time import perf_counter
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
@@ -15,12 +16,13 @@ OK_MSG = {"message": "OK"}
 
 @router.post("/save")
 async def save_result(request: Request, body: ResultBody):
+    start = perf_counter()
     exp_id = request.app.state.experiment
     sample = update_sample(request)
     save_result = {
         "net": body.net,
         "time_device": body.time,
-        "time_server": 0,
+        "time_server": perf_counter() - start,
         "result": body.result,
         "req_len": int(request.headers["content-length"]),
         "res_len": len(json.dumps(OK_MSG)),
